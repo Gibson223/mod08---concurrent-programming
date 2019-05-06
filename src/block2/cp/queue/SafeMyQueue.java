@@ -1,10 +1,8 @@
 package block2.cp.queue;
 
-import java.util.LinkedList;
-
 public class SafeMyQueue implements Queue {
 
-    private LinkedList<Object> llist = new LinkedList<Object>();
+    private block2.cp.queue.LinkedList llist = new LinkedList();
 
     /**
      * Pushes an element at the head of the queue.
@@ -14,7 +12,6 @@ public class SafeMyQueue implements Queue {
     @Override
     public synchronized void push(Object x) {
         llist.addFirst(x);
-        System.out.println(llist);
     }
 
     /**
@@ -29,7 +26,7 @@ public class SafeMyQueue implements Queue {
      * Returns the number of elements in the queue.
      */
     @Override
-    public int getLength() {
-        return llist.size();
+    public synchronized int getLength() {
+        return llist.getSize();
     }
 }

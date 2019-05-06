@@ -11,7 +11,7 @@ public class UnsafeSequenceTest {
     private static final int THREAD_COUNT = 4;
     private  static final int DO_TIMES = 100;
 
-    private final UnsafeSequence sequence = new UnsafeSequence();
+    private final SafeSequence0 sequence = new SafeSequence0();
 
     @Test
     @Threaded(count = THREAD_COUNT)
