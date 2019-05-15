@@ -40,7 +40,15 @@ public class MyLinkedList implements List {
                         throw new IndexOutOfBoundsException("Index is out of bounds");
                     }
                     MyLinkedNode newNode = new MyLinkedNode(value);
+                    MyLinkedNode prevNext = currentNode.getNext();
+                    if (prevNext != null) {
+                    	prevNext.lock.lock();
+                    }
                     currentNode.setNext(newNode);
+                    newNode.setNext(prevNext);
+	                if (prevNext != null) {
+		                prevNext.lock.unlock();
+	                }
                 } finally {
                     currentNode.lock.unlock();
                 }
@@ -76,6 +84,7 @@ public class MyLinkedList implements List {
                     }
                     MyLinkedNode newNode = new MyLinkedNode(value);
                     currentNode.setNext(newNode);
+                    size.incrementAndGet();
                 } finally {
                     currentNode.lock.unlock();
                 }
@@ -92,7 +101,52 @@ public class MyLinkedList implements List {
      */
     @Override
     public void remove(Object item) {
-
+	    firstNode.lock.lock();
+	    try {
+		    MyLinkedNode prevNode = null;
+		    MyLinkedNode currentNode = firstNode;
+		    try {
+			    while (!currentNode.getThisObject().equals(item) && currentNode.hasNext()) {
+				    if (prevNode != null) {
+					    prevNode.lock.unlock();
+				    }
+				    prevNode = currentNode;
+				    if (prevNode.hasNext()) {
+					    currentNode = prevNode.getNext();
+					    currentNode.lock.lock();
+				    } else {
+					    throw new IndexOutOfBoundsException("Index out of bounds");
+				    }
+			    }
+//              Item found, remove it
+			    if (currentNode.getThisObject().equals(item)) {
+//			    	Previous node does not exist, item in first node
+			    	if (prevNode == null) {
+			    		if (currentNode.hasNext()) {
+						    firstNode = currentNode.getNext();
+					    } else {
+			    			firstNode.setThisObject(null);
+					    }
+//			        Previous node exists, remove current node and replace pointer of previous node
+				    } else {
+					    if (currentNode.hasNext()) {
+						    prevNode.setNext(currentNode.getNext());
+					    } else {
+						    prevNode.setNext(null);
+					    }
+				    }
+			    	size.decrementAndGet();
+			    }
+//			    The item has not been found
+		    } finally {
+			    currentNode.lock.unlock();
+			    if (prevNode != null) {
+				    prevNode.lock.unlock();
+			    }
+		    }
+	    } finally {
+		    firstNode.lock.unlock();
+	    }
     }
 
     /**
@@ -121,10 +175,22 @@ public class MyLinkedList implements List {
                         throw new IndexOutOfBoundsException("Index out of bounds");
                     }
                 }
+//              The previous node is not null, so change its next to not point to the to be removed node
                 if (prevNode != null) {
-                    prevNode.setNext(null);
+                	if (currentNode.hasNext()) {
+                		prevNode.setNext(currentNode.getNext());
+	                } else {
+		                prevNode.setNext(null);
+	                }
+                    this.size.decrementAndGet();
+//              Previous node does not exists, so first node (index 0) is to be deleted
                 } else if (currentNode.hasNext()) {
-                    currentNode.setNext(null);
+                	this.firstNode = currentNode.getNext();
+                    this.size.decrementAndGet();
+//              First node to be deleted, and list will be empty afterwards
+                } else if (currentNode.getThisObject() != null) {
+                	this.firstNode.setThisObject(null);
+//              List is already empty, throw index out of bounds exception
                 } else {
                     throw new IndexOutOfBoundsException("Index out of bounds");
                 }
