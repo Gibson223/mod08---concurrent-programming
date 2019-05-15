@@ -2,9 +2,11 @@ package block3.cp.lockcoupling;
 
 import block2.cp.queue.LinkedNode;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class MyLinkedList implements List {
 
-    private int size;
+    private AtomicInteger size;
     private MyLinkedNode firstNode = new MyLinkedNode(null);
 
     /**
@@ -99,33 +101,36 @@ public class MyLinkedList implements List {
      * @param position The position of the element that should be deleted.
      */
     @Override
-    public void delete(int position) {
+    public void delete(int position) throws IndexOutOfBoundsException{
         int currentIndex = 0;
         firstNode.lock.lock();
         try {
-            if (firstNode.getThisObject() != null) {
-                MyLinkedNode prevNode = firstNode;
-                MyLinkedNode currentNode;
-                try {
-                    if (!prevNode.hasNext()) {
-                        prevNode.setThisObject(null);
-                    } else {
+            MyLinkedNode prevNode = null;
+            MyLinkedNode currentNode = firstNode;
+            try {
+                while (currentIndex != position) {
+                    if (prevNode != null) {
+                        prevNode.lock.unlock();
+                    }
+                    prevNode = currentNode;
+                    if (prevNode.hasNext()) {
                         currentNode = prevNode.getNext();
                         currentNode.lock.lock();
-                        try {
-                            while (currentNode.hasNext() && ) {
-                                prevNode.lock.unlock();
-                                prevNode = currentNode;
-                                currentNode = prevNode.getNext();
-                                currentNode.lock.lock();
-                            }
-                            prevNode.setNext(null);
-                        } finally {
-                            currentNode.lock.unlock();
-                            prevNode.lock.unlock();
-                        }
+                        currentIndex++;
+                    } else {
+                        throw new IndexOutOfBoundsException("Index out of bounds");
                     }
-                } finally {
+                }
+                if (prevNode != null) {
+                    prevNode.setNext(null);
+                } else if (currentNode.hasNext()) {
+                    currentNode.setNext(null);
+                } else {
+                    throw new IndexOutOfBoundsException("Index out of bounds");
+                }
+            } finally {
+                currentNode.lock.unlock();
+                if (prevNode != null) {
                     prevNode.lock.unlock();
                 }
             }
@@ -141,6 +146,6 @@ public class MyLinkedList implements List {
      */
     @Override
     public synchronized int size() {
-        return size;
+        return this.size.intValue();
     }
 }
