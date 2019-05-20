@@ -20,6 +20,9 @@ public class LinkedList {
     }
 
     public Object removeLast() {
+        if (this.getSize() == 0) {
+            return null;
+        }
         size--;
         LinkedNode OldLast = lastNode;
         lastNode = lastNode.getPrev();
