@@ -16,11 +16,13 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @RunWith(ConcurrentRunner.class)
 public class QueueTest {
 
     private static final int THREAD_COUNT = 5;
-    private  static final int DO_TIMES = 100;
+    private  static final int DO_TIMES = 10;
     private  Queue queue;
     private final Queue safeMyQueue = new SafeMyQueue();
     private final Queue concur = new concurrencyqueue();
@@ -50,34 +52,38 @@ public class QueueTest {
 //        queue.push(new Object());
     }
 
-    public static final int NUMCONS=1;
+    public static final int NUMCONS=3;
     public static final int NUMPRODS=1;
     private final multiqueue prodcons = new multiqueue(NUMPRODS);
 
+    private SafeMyQueue savequeue = new SafeMyQueue();
 
+    private final int TOTAL  = 100;
+    private AtomicInteger a = new AtomicInteger(0);
     @Test
     @Threaded(count = NUMCONS+ NUMPRODS)
-    public void prodconstest(@ThreadNumber int thrdnr) throws QueueEmptyException {
-        this.queue = prodcons;
+    public void prodconstest(@ThreadNumber int thrdnr) {
+        System.out.println(thrdnr);
         if (thrdnr < NUMPRODS) {
-            this.prods(thrdnr);
+            for (int i= 0; i < TOTAL; i++) {
+                this.prodcons.push(i);
+                System.out.println("val i: "+ i);
+            }
+
         } else {
-            for (int p=0; p < (DO_TIMES*NUMPRODS/NUMCONS);p++) {
-                if (this.prodcons.pull() == null) {
-                    System.out.println("pulled nothing");
+            while(this.a.get() < TOTAL) {
+                Object i = this.prodcons.pull();
+                if ( i == null) {
+                    continue;
                 }
-                System.out.println("pulled something");
+                int l = (int) i;
+                this.savequeue.push(l);
+                a.incrementAndGet();
+                System.out.println(thrdnr + " pulled " + l);
             }
         }
     }
 
-    public void prods(int thrdnr) {
-        System.out.println("got here");
-        for (int i = 0; i< DO_TIMES; i++) {
-//            System.out.println("tried to add object");
-            this.prodcons.push(new Object(), thrdnr);
-        }
-    }
 
 
 //    @Test
@@ -98,8 +104,10 @@ public class QueueTest {
     @After
     public void afterTest() {
         System.out.println( this.name.getMethodName() + " time to run: " + (System.nanoTime() - this.time));
-        System.out.println(queue.getLength());
-        assert(queue.getLength() == 0);
+        System.out.println(prodcons.getLength());
+        System.out.println("savequeue: "+ this.savequeue.getLength());
+        assert(this.savequeue.getLength() == 100);
+        assert(prodcons.getLength() == 0);
     }
 
 }

@@ -2,7 +2,7 @@ package block2.cp.queue;
 
 public class SafeMyQueue implements Queue {
 
-    private block2.cp.queue.LinkedList llist = new LinkedList();
+    public block2.cp.queue.LinkedList llist = new LinkedList();
 
     /**
      * Pushes an element at the head of the queue.

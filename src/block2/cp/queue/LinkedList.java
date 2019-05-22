@@ -19,9 +19,9 @@ public class LinkedList {
         size++;
     }
 
-    public Object removeLast() {
+    public Object removeLast() throws QueueEmptyException {
         if (this.getSize() == 0) {
-            return null;
+            throw new QueueEmptyException();
         }
         size--;
         LinkedNode OldLast = lastNode;
