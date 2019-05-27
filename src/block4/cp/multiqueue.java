@@ -18,36 +18,23 @@ public class multiqueue implements Queue {
     }
     private int i = 0;
     @Override
-    public synchronized void push(Object x) {
-        i = i % QueueTest.NUMPRODS;
+    public void push(Object x) {
+        i =  (int) Thread.currentThread().getId() % QueueTest.NUMPRODS;
         this.multiqueue.get(i).push(x);
     }
-    //doesnt need synchronized, should only have 1 produces per queue
-//    public void push(Object x, int thr){
-//        System.out.println("tried to add");
-//        this.multiqueue.get(thr).push(x);
-//    }
 
-//    public final int CHECKS = 10000;
     @Override
-    public synchronized Object pull() {
-//        int checks = 0;
-//        boolean done = false;
-//        while (checks < CHECKS) {
+    public Object pull() {
             for (SafeMyQueue q : this.multiqueue) {
                 Object i;
                 try {
                     i = q.pull();
                 } catch (QueueEmptyException e) {
-//                    System.out.println("empty exception");
                     continue;
                 }
-                // actually obtained something
                 return i;
             }
-//            checks = checks + 1;
 //            }
-//        System.out.println("checks needed: " + checks);
         return null;
     }
 
@@ -60,24 +47,4 @@ public class multiqueue implements Queue {
         return total;
     }
 
-//    public class producer {
-//        public SafeMyQueue queue;
-//        public producer() {
-//            queue = new SafeMyQueue();
-//        }
-//        // doesnt need synchronized, only that pushes to this queue
-//        public void push(Object x){
-//            System.out.println("pushed object");
-//            queue.push(x);
-////            System.out.println(queue.getLength());
-//        }
-//        public synchronized Object pull() throws QueueEmptyException {
-//            if (this.queue.getLength() != 0) {
-//                this.queue.pull();
-//            }
-////            System.out.println("queue" + " is empty");
-////            throw new QueueEmptyException();
-//        }
-
-//    }
 }

@@ -22,6 +22,7 @@ public class dekker1 implements BasicLock {
          */
         @Override
         public void lock(int threadNumber) {
+
             int other = 1 - threadNumber;
             this.wantstoenter.set(threadNumber, 1);
             while (this.wantstoenter.get(other) == 1) {
