@@ -1,11 +1,14 @@
 package block3.cp.locks;
 
+import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class CompareAndSet implements BasicLock{
     public AtomicInteger locked;
+    public PriorityQueue queue;
     public CompareAndSet(){
+        this.queue = new PriorityQueue();
         this.locked = new AtomicInteger(-1);
     }
     /**
@@ -16,7 +19,8 @@ public class CompareAndSet implements BasicLock{
      * @param threadNumber
      */
     @Override
-    public void lock(int threadNumber) {
+    public void lock (int threadNumber) {
+        this.queue.add(threadNumber);
        while(!this.locked.compareAndSet(-1, threadNumber));
     }
 
