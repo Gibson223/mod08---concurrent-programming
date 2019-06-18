@@ -52,8 +52,8 @@ public class QueueTest {
 //        queue.push(new Object());
     }
 
-    public static final int NUMCONS=3;
-    public static final int NUMPRODS=1;
+    public static final int NUMCONS=20;
+    public static final int NUMPRODS=3;
     private final multiqueue prodcons = new multiqueue(NUMPRODS);
 
     private SafeMyQueue savequeue = new SafeMyQueue();
@@ -71,7 +71,7 @@ public class QueueTest {
             }
 
         } else {
-            while(this.a.get() < TOTAL) {
+            while(this.a.get() < TOTAL *NUMPRODS) {
                 Object i = this.prodcons.pull();
                 if ( i == null) {
                     continue;
